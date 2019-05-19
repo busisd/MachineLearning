@@ -39,7 +39,7 @@ def move_left(pos, grid):
 def execute_steps(steps, start_pos, grid):
 	pos = start_pos
 	for step in steps:
-		pos = step(pos, grid)
+		pos = possible_steps[step](pos, grid)
 	return pos
 
 def calc_score(steps, start, target, grid):
@@ -48,15 +48,15 @@ def calc_score(steps, start, target, grid):
 	steps_factor = len(steps)
 	return 1000*dist_factor + steps_factor
 	
-possible_steps = [move_up, move_right, move_left, move_down]
-def perform_mutations(steps, mutations=3, constructiveness=.9):
+possible_steps = {'up':move_up, 'right':move_right, 'down':move_down, 'left':move_left}
+def perform_mutations(steps, mutations=3, constructiveness=.6):
 	new_steps = steps.copy()
 	for i in range(mutations):
 		r = random.random()
 		if (r<constructiveness):
 			rand_index = random.randrange(len(new_steps)+1)
 			rand_step = random.randrange(len(possible_steps))
-			new_steps.insert(rand_index, possible_steps[rand_step])
+			new_steps.insert(rand_index, list(possible_steps.keys())[rand_step])
 		else:
 			if len(new_steps) > 0:
 				rand_index = random.randrange(len(new_steps))
@@ -78,16 +78,15 @@ start = (0,0)
 target = (9,9)
 
 current_steps = []
-for i in range(10):
+for i in range(20):
 	cur_score = calc_score(current_steps, start, target, grid)
 	
 	new_step_lists = []
-	for j in range(5):
+	for j in range(6):
 		new_step_lists.append(perform_mutations(current_steps))
 		
 	new_steps = find_best_step_list(new_step_lists, start, target, grid)
-	print(new_steps, end = ' : ')
 	if calc_score(new_steps,start,target,grid)<calc_score(current_steps,start,target,grid):
 		current_steps = new_steps
-	print(current_steps)
+	print(current_steps, ':', calc_score(current_steps,start,target,grid), 'at', execute_steps(current_steps, start, grid))
 
